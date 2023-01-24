@@ -25,9 +25,8 @@ def setup():
     subprocess.call(["sh", "./bin/create_db.sh"])
     migrations_dir = BASE_DIR / "app" / "migrations"
     for file in migrations_dir.iterdir():
-        if file.is_file():
+        if file.is_file() and file.name not in ("__init__.py", ".gitignore"):
             file.unlink()
-    migrations_dir.rmdir()
     migrations_dir.mkdir(exist_ok=True)
     (migrations_dir / "__init__.py").touch(exist_ok=True)
     models_dir = BASE_DIR / "app" / "models"
@@ -70,7 +69,7 @@ def print_dashes():
 
 
 def with_groups():
-    from app.models.with_groups import Group, GroupRole, Role, User, UserGroup, UserRole
+    from app.models.with_groups import Group, GroupRole, GroupUser, Role, User, UserRole
 
     create_db(True)
     print("Create User")
@@ -124,7 +123,7 @@ def with_groups():
     )
     print_dashes()
     print("Let's attach User 1 to Group 1")
-    UserGroup.objects.create(user=user, group=group1)
+    group_user = GroupUser.objects.create(user=user, group=group1)
     print("We also need to attach the group's roles to the user")
     print("Get group roles")
     group_roles = list(
@@ -144,6 +143,7 @@ def with_groups():
                 role_id=role_id,
                 permissions=role_permissions,
                 group_role_id=group_role_id,
+                group_user=group_user,
             )
             for group_role_id, role_id, role_permissions in group_roles
         ]

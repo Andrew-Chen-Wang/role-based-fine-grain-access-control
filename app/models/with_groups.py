@@ -30,6 +30,7 @@ class UserRole(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
     group_role = models.ForeignKey("GroupRole", on_delete=models.CASCADE, null=True)
+    group_user = models.ForeignKey("GroupUser", on_delete=models.CASCADE, null=True)
     permissions = ArrayField(models.PositiveIntegerField())
 
     def __str__(self):
@@ -57,7 +58,7 @@ class GroupRole(models.Model):
         return f"{self.group.name} - {self.role.name}"
 
 
-class UserGroup(models.Model):
+class GroupUser(models.Model):
     """Defines the groups attached to the user"""
 
     id = models.BigAutoField(primary_key=True)
