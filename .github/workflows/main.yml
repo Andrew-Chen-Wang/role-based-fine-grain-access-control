@@ -11,8 +11,6 @@ on:
       - main
       - '[0-9].[0-9]+'
       - 'update/pre-commit-autoupdate'
-  schedule:
-    - cron: '0 6 * * *' # Daily 6AM UTC build
 
 jobs:
   lint:
@@ -33,6 +31,21 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      matrix:
+        with-groups: [with_groups, without_groups]
+
+    services:
+      postgres:
+        image: postgres
+        env:
+        POSTGRES_USER: testorm
+        POSTGRES_PASSWORD: testorm
+        POSTGRES_DB: testorm
+        ports:
+        - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2.4.0
@@ -49,4 +62,5 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements/local.txt
     - name: Test
-      run: pytest tests/
+      run: |
+        python main.py ${{ matrix.with-groups }}
