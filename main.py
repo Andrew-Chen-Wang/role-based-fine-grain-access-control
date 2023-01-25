@@ -161,22 +161,41 @@ def with_groups():
         "Let's perform a query to see whether a permission (Can Read) exists for a user"
     )
     has_permission = UserRole.objects.filter(
-        user=user, permissions__contains=[Permission.CAN_READ.value]
+        user=user, permissions__overlap=[Permission.CAN_READ.value]
     ).exists()
     assert has_permission is True, "Strange..."
     print(f"User has permission: {has_permission}")
     print("Let's do it for multiple permissions now")
     has_permissions = UserRole.objects.filter(
         user=user,
+        permissions__overlap=[Permission.CAN_READ.value, Permission.CAN_CREATE.value],
+    ).exists()
+    assert has_permissions is True, "Strange..."
+    print(f"User has permissions: {has_permissions}")
+    print(
+        "What if we want to see if the user has two permissions? Use contains "
+        "instead of overlap"
+    )
+    has_permissions = UserRole.objects.filter(
+        user=user,
         permissions__contains=[Permission.CAN_READ.value, Permission.CAN_CREATE.value],
     ).exists()
     assert has_permissions is True, "Strange..."
+    print(f"User has permissions: {has_permissions}")
+    has_permissions = UserRole.objects.filter(
+        user=user,
+        permissions__contains=[
+            Permission.CAN_RULE_THE_WORLD.value,
+            Permission.CAN_CREATE.value,
+        ],
+    ).exists()
+    assert has_permissions is False, "Strange..."
     print(f"User has permissions: {has_permissions}")
     print("Let's remove a disjoint Role 3 from user")
     UserRole.objects.filter(user=user, role=role3, group_role=None).delete()
     print("Let's see if the user still has the permission")
     has_permission = UserRole.objects.filter(
-        user=user, permissions__contains=role3.permissions
+        user=user, permissions__overlap=role3.permissions
     ).exists()
     assert has_permission is True, "Strange..."
     print(f"User has permission: {has_permission}")
@@ -190,7 +209,7 @@ def with_groups():
     GroupRole.objects.filter(group=group1, role=role3).delete()
     print("Let's see if the user still has the permission")
     has_permission = UserRole.objects.filter(
-        user=user, permissions__contains=role3.permissions
+        user=user, permissions__overlap=role3.permissions
     ).exists()
     assert has_permission is False, "Strange..."
     print(f"User has permission: {has_permission}")
@@ -203,7 +222,7 @@ def with_groups():
     Group.objects.filter(id=group1.id).delete()
     print("Let's see if the user still has Role 2's permission")
     has_permission = UserRole.objects.filter(
-        user=user, permissions__contains=role2.permissions
+        user=user, permissions__overlap=role2.permissions
     ).exists()
     assert has_permission is True, "Strange..."
     print(
@@ -246,7 +265,7 @@ def without_groups():
 
     print("Let's see if the user has Role 4 (disjoint from other roles) permissions")
     has_permission = UserRole.objects.filter(
-        user=user, permissions__contains=role4.permissions
+        user=user, permissions__overlap=role4.permissions
     ).exists()
     assert has_permission is False, "Strange..."
     print(f"User has permission: {has_permission}")
@@ -255,16 +274,35 @@ def without_groups():
         "role has (Can Read)"
     )
     has_permission = UserRole.objects.filter(
-        user=user, permissions__contains=[Permission.CAN_READ.value]
+        user=user, permissions__overlap=[Permission.CAN_READ.value]
     ).exists()
     assert has_permission is True, "Strange..."
     print(f"User has permission: {has_permission}")
+    print(
+        "What if we want to see if the user has two permissions? Use contains "
+        "instead of overlap"
+    )
+    has_permissions = UserRole.objects.filter(
+        user=user,
+        permissions__contains=[Permission.CAN_READ.value, Permission.CAN_CREATE.value],
+    ).exists()
+    assert has_permissions is True, "Strange..."
+    print(f"User has permissions: {has_permissions}")
+    has_permissions = UserRole.objects.filter(
+        user=user,
+        permissions__contains=[
+            Permission.CAN_RULE_THE_WORLD.value,
+            Permission.CAN_CREATE.value,
+        ],
+    ).exists()
+    assert has_permissions is False, "Strange..."
+    print(f"User has permissions: {has_permissions}")
     print(
         "Let's see if the user has one of the permissions from Role 1 and 2 "
         "(Can Create)"
     )
     has_permission = UserRole.objects.filter(
-        user=user, permissions__contains=[Permission.CAN_CREATE.value]
+        user=user, permissions__overlap=[Permission.CAN_CREATE.value]
     ).exists()
     assert has_permission is True, "Strange..."
     print(f"User has permission: {has_permission}")
