@@ -1,5 +1,7 @@
 # Example database setup of fine-grained role-based access control
 
+![Role Based Access Control](https://user-images.githubusercontent.com/60190294/217440446-80a80c1b-c657-42ef-91a0-95acf02fb8cd.png)
+
 This is an example implementation of relational database tables for
 fine-grained access control with custom permissions and roles, similar to AWS IAM
 roles and policies/permissions.
@@ -361,6 +363,16 @@ Thanks for going through this tutorial
 ```
 
 </details>
+
+### Longer explanation
+
+Assume we have an organization that can dynamically create roles. Each organization has Members. We can create roles for the organization and attach permission IDs (integers) to a role. Let's attach a role to a Member. To do so, we create a MemberRole with a foreign key to Member and Role. We set the groups to null for now; copy the permissions from the role to the MemberRole. On update of Role's permissions, simply update all Roles with a foreign key pointing to that role with the new permissions integer array.
+
+If we want to quickly attach several roles to members in the organization where several members have the same roles/permissions in their current enterprise setting, we create a Group. Create a Group. To attach roles, create a GroupRole that has an FK to Organization and the Role you want to attach. Now let's add members to the group. 1) We create a GroupMember by pointing to the Group and the Member and 2) we create a MemberRole by attaching the Role IDs of the Group you attached the member to. Do this for all group roles. We perform this operation by creating MemberRole the same way we did before but this time we add the FK to GroupMember and GroupRole.
+
+Now to see whether a user has permission to conduct an action, you can perform overlap and contains operations in PostgreSQL on the permissions table with whatever filters you want.
+
+Note: All foreign keys cascade on deletion. This allows for easy resource cleanup. For instance, if a role is deleted, then the role is deleted for MemberRole and GroupRole. If a Member is deleted, then the all Member related materials are also deleted.
 
 ### Running it locally
 
